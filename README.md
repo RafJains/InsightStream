@@ -29,6 +29,7 @@ It helps users decide what to watch by combining:
 - Details logic moved to a service layer
 - Proper 404 handling added for content endpoints
 - Nested, cleaner, frontend-ready details response prepared
+- Refactored content endpoints to stop returning raw database rows. Added reusable service functions for /content and /content/{content_id}, reused structured Pydantic schemas, and aligned all content routes with the cleaner API style already used in /content/{content_id}/details.
 
 ## Current Backend Features
 - FastAPI setup with PostgreSQL connection
