@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app.services.content_service import build_content_object
 
 
 def add_to_watch_later_service(user_id: int, content_id: int, db: Session):
@@ -87,3 +88,53 @@ def add_to_watched_service(user_id: int, content_id: int, db: Session):
     db.commit()
 
     return {"message": "Added to watched"}
+
+
+def get_watch_later_service(user_id: int, db: Session):
+    query = text("""
+        SELECT
+            c.id,
+            c.title,
+            c.content_type,
+            c.overview,
+            c.poster_url,
+            c.backdrop_url,
+            c.release_date,
+            c.year,
+            c.runtime,
+            c.language,
+            c.age_rating
+        FROM watch_later wl
+        JOIN content c ON wl.content_id = c.id
+        WHERE wl.user_id = :user_id
+        ORDER BY wl.added_at DESC;
+    """)
+    result = db.execute(query, {"user_id": user_id})
+    rows = result.mappings().all()
+
+    return [build_content_object(row) for row in rows]
+
+
+def get_watched_service(user_id: int, db: Session):
+    query = text("""
+        SELECT
+            c.id,
+            c.title,
+            c.content_type,
+            c.overview,
+            c.poster_url,
+            c.backdrop_url,
+            c.release_date,
+            c.year,
+            c.runtime,
+            c.language,
+            c.age_rating
+        FROM watched w
+        JOIN content c ON w.content_id = c.id
+        WHERE w.user_id = :user_id
+        ORDER BY w.watched_at DESC;
+    """)
+    result = db.execute(query, {"user_id": user_id})
+    rows = result.mappings().all()
+
+    return [build_content_object(row) for row in rows]

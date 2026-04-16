@@ -2,10 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.user_content import UserContentAction
+from typing import List
+from app.schemas.content import Content
 from app.services.user_content_service import (
     add_to_watch_later_service,
     add_to_watched_service,
-)
+    get_watch_later_service,
+    get_watched_service,
+) 
 
 router = APIRouter()
 
@@ -28,3 +32,13 @@ def add_to_watched(data: UserContentAction, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Content not found")
 
     return result
+
+
+@router.get("/watch-later/{user_id}", response_model=List[Content])
+def get_watch_later(user_id: int, db: Session = Depends(get_db)):
+    return get_watch_later_service(user_id, db)
+
+
+@router.get("/watched/{user_id}", response_model=List[Content])
+def get_watched(user_id: int, db: Session = Depends(get_db)):
+    return get_watched_service(user_id, db)
