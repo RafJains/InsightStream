@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.schemas.user_content import UserContentAction
+from app.schemas.user_content import UserContentAction, ActionResponse
 from typing import List
 from app.schemas.content import Content
 from app.services.user_content_service import (
@@ -16,7 +16,7 @@ from app.services.user_content_service import (
 router = APIRouter()
 
 
-@router.post("/watch-later")
+@router.post("/watch-later", response_model=ActionResponse)
 def add_to_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
     result = add_to_watch_later_service(data.user_id, data.content_id, db)
 
@@ -29,7 +29,7 @@ def add_to_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
     return result
 
 
-@router.post("/watched")
+@router.post("/watched", response_model=ActionResponse)
 def add_to_watched(data: UserContentAction, db: Session = Depends(get_db)):
     result = add_to_watched_service(data.user_id, data.content_id, db)
 
@@ -49,12 +49,12 @@ def get_watched(user_id: int, db: Session = Depends(get_db)):
     return get_watched_service(user_id, db)
 
 
-@router.delete("/watch-later")
+@router.delete("/watch-later", response_model=ActionResponse)
 def remove_from_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
     return remove_from_watch_later_service(data.user_id, data.content_id, db)
 
 
-@router.delete("/watched")
+@router.delete("/watched", response_model=ActionResponse)
 def remove_from_watched(data: UserContentAction, db: Session = Depends(get_db)):
     return remove_from_watched_service(data.user_id, data.content_id, db)
 
