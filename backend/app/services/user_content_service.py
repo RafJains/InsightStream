@@ -41,7 +41,7 @@ def add_to_watch_later_service(user_id: int, content_id: int, db: Session):
     existing_row = existing_result.mappings().first()
 
     if existing_row:
-        return {"message": "Already in watch later"}
+        return {"error": "Already in watch later"}
 
     insert_query = text("""
         INSERT INTO watch_later (user_id, content_id)
@@ -80,7 +80,7 @@ def add_to_watched_service(user_id: int, content_id: int, db: Session):
     existing_row = existing_result.mappings().first()
 
     if existing_row:
-        return {"message": "Already in watched"}
+        return {"error": "Already in watched"}
 
     delete_watch_later_query = text("""
         DELETE FROM watch_later
@@ -102,6 +102,7 @@ def add_to_watched_service(user_id: int, content_id: int, db: Session):
     db.commit()
 
     return {"message": "Added to watched"}
+
 
 def get_watch_later_service(user_id: int, db: Session):
     query = text("""
@@ -152,6 +153,7 @@ def get_watched_service(user_id: int, db: Session):
 
     return [build_content_object(row) for row in rows]
 
+
 def remove_from_watch_later_service(user_id: int, content_id: int, db: Session):
     existing_query = text("""
         SELECT id
@@ -165,7 +167,7 @@ def remove_from_watch_later_service(user_id: int, content_id: int, db: Session):
     existing_row = existing_result.mappings().first()
 
     if not existing_row:
-        return {"message": "Content not found in watch later"}
+        return {"error": "Content not found in watch later"}
 
     delete_query = text("""
         DELETE FROM watch_later
@@ -193,7 +195,7 @@ def remove_from_watched_service(user_id: int, content_id: int, db: Session):
     existing_row = existing_result.mappings().first()
 
     if not existing_row:
-        return {"message": "Content not found in watched"}
+        return {"error": "Content not found in watched"}
 
     delete_query = text("""
         DELETE FROM watched

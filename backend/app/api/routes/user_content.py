@@ -11,7 +11,7 @@ from app.services.user_content_service import (
     get_watched_service,
     remove_from_watch_later_service,
     remove_from_watched_service,
-) 
+)
 
 router = APIRouter()
 
@@ -26,6 +26,9 @@ def add_to_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
     if result.get("error") == "Already marked as watched":
         raise HTTPException(status_code=400, detail="Content is already marked as watched")
 
+    if result.get("error") == "Already in watch later":
+        raise HTTPException(status_code=409, detail="Content is already in watch later")
+
     return result
 
 
@@ -35,6 +38,9 @@ def add_to_watched(data: UserContentAction, db: Session = Depends(get_db)):
 
     if result.get("error") == "Content not found":
         raise HTTPException(status_code=404, detail="Content not found")
+
+    if result.get("error") == "Already in watched":
+        raise HTTPException(status_code=409, detail="Content is already in watched")
 
     return result
 
@@ -51,10 +57,19 @@ def get_watched(user_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/watch-later", response_model=ActionResponse)
 def remove_from_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
-    return remove_from_watch_later_service(data.user_id, data.content_id, db)
+    result = remove_from_watch_later_service(data.user_id, data.content_id, db)
+
+    if result.get("error") == "Content not found in watch later":
+        raise HTTPException(status_code=404, detail="Content not found in watch later")
+
+    return result
 
 
 @router.delete("/watched", response_model=ActionResponse)
 def remove_from_watched(data: UserContentAction, db: Session = Depends(get_db)):
-    return remove_from_watched_service(data.user_id, data.content_id, db)
+    result = remove_from_watched_service(data.user_id, data.content_id, db)
 
+    if result.get("error") == "Content not found in watched":
+        raise HTTPException(status_code=404, detail="Content not found in watched")
+
+    return result
