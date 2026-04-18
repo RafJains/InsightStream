@@ -15,6 +15,20 @@ def add_to_watch_later_service(user_id: int, content_id: int, db: Session):
     if not content_row:
         return {"error": "Content not found"}
 
+    watched_check_query = text("""
+        SELECT id
+        FROM watched
+        WHERE user_id = :user_id AND content_id = :content_id;
+    """)
+    watched_result = db.execute(watched_check_query, {
+        "user_id": user_id,
+        "content_id": content_id
+    })
+    watched_row = watched_result.mappings().first()
+
+    if watched_row:
+        return {"error": "Already marked as watched"}
+
     existing_query = text("""
         SELECT id
         FROM watch_later
@@ -72,9 +86,9 @@ def add_to_watched_service(user_id: int, content_id: int, db: Session):
         DELETE FROM watch_later
         WHERE user_id = :user_id AND content_id = :content_id;
     """)
-    delete_result = db.execute(delete_watch_later_query, {
-    "user_id": user_id,
-    "content_id": content_id
+    db.execute(delete_watch_later_query, {
+        "user_id": user_id,
+        "content_id": content_id
     })
 
     insert_query = text("""
@@ -88,7 +102,6 @@ def add_to_watched_service(user_id: int, content_id: int, db: Session):
     db.commit()
 
     return {"message": "Added to watched"}
-
 
 def get_watch_later_service(user_id: int, db: Session):
     query = text("""

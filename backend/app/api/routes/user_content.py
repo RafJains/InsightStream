@@ -23,6 +23,9 @@ def add_to_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
     if result.get("error") == "Content not found":
         raise HTTPException(status_code=404, detail="Content not found")
 
+    if result.get("error") == "Already marked as watched":
+        raise HTTPException(status_code=400, detail="Content is already marked as watched")
+
     return result
 
 
