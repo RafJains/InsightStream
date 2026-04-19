@@ -20,6 +20,9 @@ router = APIRouter()
 def add_to_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
     result = add_to_watch_later_service(data.user_id, data.content_id, db)
 
+    if result.get("error") == "User not found":
+        raise HTTPException(status_code=404, detail="User not found")
+
     if result.get("error") == "Content not found":
         raise HTTPException(status_code=404, detail="Content not found")
 
@@ -36,6 +39,9 @@ def add_to_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
 def add_to_watched(data: UserContentAction, db: Session = Depends(get_db)):
     result = add_to_watched_service(data.user_id, data.content_id, db)
 
+    if result.get("error") == "User not found":
+        raise HTTPException(status_code=404, detail="User not found")
+
     if result.get("error") == "Content not found":
         raise HTTPException(status_code=404, detail="Content not found")
 
@@ -47,17 +53,30 @@ def add_to_watched(data: UserContentAction, db: Session = Depends(get_db)):
 
 @router.get("/watch-later/{user_id}", response_model=List[Content])
 def get_watch_later(user_id: int, db: Session = Depends(get_db)):
-    return get_watch_later_service(user_id, db)
+    result = get_watch_later_service(user_id, db)
+
+    if isinstance(result, dict) and result.get("error") == "User not found":
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return result
 
 
 @router.get("/watched/{user_id}", response_model=List[Content])
 def get_watched(user_id: int, db: Session = Depends(get_db)):
-    return get_watched_service(user_id, db)
+    result = get_watched_service(user_id, db)
+
+    if isinstance(result, dict) and result.get("error") == "User not found":
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return result
 
 
 @router.delete("/watch-later", response_model=ActionResponse)
 def remove_from_watch_later(data: UserContentAction, db: Session = Depends(get_db)):
     result = remove_from_watch_later_service(data.user_id, data.content_id, db)
+
+    if result.get("error") == "User not found":
+        raise HTTPException(status_code=404, detail="User not found")
 
     if result.get("error") == "Content not found in watch later":
         raise HTTPException(status_code=404, detail="Content not found in watch later")
@@ -68,6 +87,9 @@ def remove_from_watch_later(data: UserContentAction, db: Session = Depends(get_d
 @router.delete("/watched", response_model=ActionResponse)
 def remove_from_watched(data: UserContentAction, db: Session = Depends(get_db)):
     result = remove_from_watched_service(data.user_id, data.content_id, db)
+
+    if result.get("error") == "User not found":
+        raise HTTPException(status_code=404, detail="User not found")
 
     if result.get("error") == "Content not found in watched":
         raise HTTPException(status_code=404, detail="Content not found in watched")
